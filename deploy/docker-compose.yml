@@ -1,0 +1,21 @@
+version: '3'
+services:
+  blue:
+    image: ${DOCKER_USERNAME}/skincare:${IMAGE_TAG}
+    container_name: skincare-blue
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+
+  green:
+    image: ${DOCKER_USERNAME}/skincare:${IMAGE_TAG}
+    container_name: skincare-green
+    ports:
+      - "8082:8080"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
