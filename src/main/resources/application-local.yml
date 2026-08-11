@@ -1,0 +1,8 @@
+# 로컬 개발용 프로필
+# IntelliJ Run Configuration에서 Active profiles: local 로 설정하고
+# Environment variables 에 DB_HOST, DB_USERNAME, DB_PASSWORD 를 넣어서 실행하세요.
+# 예) DB_HOST=skincare-db.xxxxxx.ap-northeast-2.rds.amazonaws.com;DB_USERNAME=admin;DB_PASSWORD=실제비밀번호
+
+spring:
+  jpa:
+    show-sql: true
