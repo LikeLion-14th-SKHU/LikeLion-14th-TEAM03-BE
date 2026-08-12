@@ -18,7 +18,7 @@ fi
 docker pull $IMAGE
 
 DOCKER_USERNAME=$DOCKER_USERNAME IMAGE_TAG=$IMAGE_TAG DB_HOST=$DB_HOST \
-DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD docker-compose up -d $NEXT
+DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD docker compose up -d $NEXT
 
 for i in {1..10}; do
   HEALTH=$(curl -s http://localhost:$NEXT_PORT/actuator/health | grep -o '"status":"UP"')
@@ -29,4 +29,4 @@ done
 sudo sed -i "s/$PREV_PORT/$NEXT_PORT/" /etc/nginx/conf.d/skincare.conf
 sudo nginx -s reload
 
-docker-compose stop $PREV
+docker compose stop $PREV
