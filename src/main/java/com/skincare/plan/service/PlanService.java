@@ -2,6 +2,8 @@ package com.skincare.plan.service;
 
 import com.skincare.card.entity.SolutionCard;
 import com.skincare.card.repository.SolutionCardRepository;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.repository.OnboardingRepository;
@@ -39,11 +41,11 @@ public class PlanService {
                                             PlanFinishRequestDto request) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         SurveyResult survey = surveyResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("설문 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         // TodoList 진행률 계산
         long totalDays = ChronoUnit.DAYS.between(
@@ -101,12 +103,12 @@ public class PlanService {
                 .orElse(null);
 
         if (onboarding == null) {
-            throw new IllegalArgumentException("플랜 정보가 없습니다");
+            throw new CustomException(ErrorCode.ONBOARDING_NOT_FOUND);
         }
 
         PlanResult planResult = planResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("종료 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.PLAN_RESULT_NOT_FOUND));
 
         return new PlanResultResponseDto(planResult);
     }

@@ -1,6 +1,8 @@
 package com.skincare.card.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.card.dto.CardResponseDto;
 import com.skincare.card.dto.ConcernRequestDto;
 import com.skincare.card.entity.SolutionCard;
@@ -50,7 +52,7 @@ public class CardService {
                     .build();
             solutionCardRepository.save(card);
         } catch (Exception e) {
-            throw new RuntimeException("초기 카드 생성 실패", e);
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
@@ -76,7 +78,7 @@ public class CardService {
                     .build();
             solutionCardRepository.save(card);
         } catch (Exception e) {
-            throw new RuntimeException("D-Day 변경 카드 생성 실패", e);
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
@@ -86,11 +88,11 @@ public class CardService {
                                           ConcernRequestDto request) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         SurveyResult survey = surveyResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("설문 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         // 기존 카드 목록 조회
         List<SolutionCard> cards = solutionCardRepository
@@ -132,7 +134,7 @@ public class CardService {
                     "medicalReferral", "RECHECK".equals(cardData.get("action"))
             );
         } catch (Exception e) {
-            throw new RuntimeException("고민 카드 저장 실패", e);
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
@@ -141,7 +143,7 @@ public class CardService {
     public CardResponseDto getCards(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);

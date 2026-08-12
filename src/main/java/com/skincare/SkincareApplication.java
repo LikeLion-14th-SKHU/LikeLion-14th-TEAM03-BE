@@ -6,9 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class SkinCareApplication {
+public class SkincareApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SkinCareApplication.class, args);
+        SpringApplication.run(SkincareApplication.class, args);
     }
 }

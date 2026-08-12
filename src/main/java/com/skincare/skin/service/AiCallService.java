@@ -1,6 +1,8 @@
 package com.skincare.skin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.card.entity.SolutionCard;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
@@ -227,7 +229,7 @@ public class AiCallService {
                 """;
             return objectMapper.readValue(mockJson, Map.class);
         } catch (Exception e) {
-            throw new RuntimeException("Mock 데이터 파싱 실패", e);
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
