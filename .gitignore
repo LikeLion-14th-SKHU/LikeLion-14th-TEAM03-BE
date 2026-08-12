@@ -199,4 +199,6 @@ $RECYCLE.BIN/
 ### Env ###
 .env
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,windows,visualstudiocode,react
+# End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,windows,visualstudiocode,reactsrc/main/resources/application-local.yml
+
+application-local.yml
