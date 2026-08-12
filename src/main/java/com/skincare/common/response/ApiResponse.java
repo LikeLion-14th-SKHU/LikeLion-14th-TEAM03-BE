@@ -27,10 +27,6 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, null, null);
     }
 
-    public static ApiResponse<Void> fail(String message) {
-        return new ApiResponse<>(false, message, null);
-    }
-
     public boolean isSuccess() {
         return success;
     }

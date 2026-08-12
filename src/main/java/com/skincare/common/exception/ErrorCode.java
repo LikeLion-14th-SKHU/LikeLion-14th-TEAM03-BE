@@ -4,22 +4,39 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
 
-    // Common
-    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "COMMON_001", "잘못된 요청입니다."),
-    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON_002", "허용되지 않은 HTTP 메서드입니다."),
-    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_003", "요청한 리소스를 찾을 수 없습니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_004", "서버 내부 오류가 발생했습니다."),
-
     // Session
-    SESSION_NOT_FOUND(HttpStatus.UNAUTHORIZED, "SESSION_001", "세션을 찾을 수 없습니다. 다시 접속해주세요.");
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "세션 정보가 없습니다"),
+    SESSION_EXPIRED(HttpStatus.UNAUTHORIZED, "세션이 만료되었습니다"),
+
+    // Onboarding
+    ONBOARDING_NOT_FOUND(HttpStatus.NOT_FOUND, "온보딩 정보가 없습니다"),
+    INVALID_GOAL_DATE(HttpStatus.BAD_REQUEST, "목표 날짜는 오늘 이후여야 합니다"),
+    SURVEY_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "설문 결과가 없습니다"),
+
+    // 피부 결과
+    SKIN_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "피부 결과가 없습니다"),
+    PLAN_EXPIRED(HttpStatus.FORBIDDEN, "종료된 플랜입니다"),
+
+    // 고민 카드
+    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "카드 정보가 없습니다"),
+
+    // 종료 결과
+    PLAN_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "종료 결과가 없습니다"),
+
+    // AI
+    AI_CALL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AI 호출에 실패했습니다"),
+
+    // 공통
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+
+    // 서버 오류
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다");
 
     private final HttpStatus status;
-    private final String code;
     private final String message;
 
-    ErrorCode(HttpStatus status, String code, String message) {
+    ErrorCode(HttpStatus status, String message) {
         this.status = status;
-        this.code = code;
         this.message = message;
     }
 
@@ -27,11 +44,11 @@ public enum ErrorCode {
         return status;
     }
 
-    public String getCode() {
-        return code;
-    }
-
     public String getMessage() {
         return message;
+    }
+
+    public String getCode() {
+        return name();
     }
 }

@@ -1,6 +1,8 @@
 package com.skincare.onboarding.service;
 
 import com.skincare.card.service.CardService;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.dto.OnboardingRequestDto;
 import com.skincare.onboarding.dto.OnboardingResponseDto;
 import com.skincare.onboarding.entity.Onboarding;
@@ -33,7 +35,7 @@ public class OnboardingService {
                                                 OnboardingRequestDto request) {
         // 목표 날짜 검증
         if (request.getGoalDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("목표 날짜는 오늘 이후여야 합니다");
+            throw new CustomException(ErrorCode.INVALID_GOAL_DATE);
         }
 
         // 기존 활성 플랜 비활성화
@@ -72,11 +74,11 @@ public class OnboardingService {
     public OnboardingResponseDto getOnboarding(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         SurveyResult surveyResult = surveyResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("설문 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         return new OnboardingResponseDto(onboarding, surveyResult);
     }
@@ -85,12 +87,12 @@ public class OnboardingService {
     @Transactional
     public void updateGoalDate(Session session, LocalDate newGoalDate) {
         if (newGoalDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("목표 날짜는 오늘 이후여야 합니다");
+            throw new CustomException(ErrorCode.INVALID_GOAL_DATE);
         }
 
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         onboarding.updateGoalDate(newGoalDate);
 
@@ -106,7 +108,7 @@ public class OnboardingService {
     public void restartOnboarding(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         onboarding.deactivate();
     }

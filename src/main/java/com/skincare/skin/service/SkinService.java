@@ -1,6 +1,8 @@
 package com.skincare.skin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.card.entity.SolutionCard;
 import com.skincare.card.repository.SolutionCardRepository;
 import com.skincare.onboarding.entity.Onboarding;
@@ -34,7 +36,7 @@ public class SkinService {
     public Map<String, Object> generateSkinResult(Onboarding onboarding) {
         SurveyResult survey = surveyResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("설문 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         // history_cards 조회
         List<SolutionCard> cards = solutionCardRepository
@@ -73,7 +75,7 @@ public class SkinService {
             return (Map<String, Object>) aiResponse.get("card");
 
         } catch (Exception e) {
-            throw new RuntimeException("AI 결과 저장 실패", e);
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
 
@@ -82,11 +84,11 @@ public class SkinService {
     public SkinResultResponseDto getSkinResult(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         SkinResult skinResult = skinResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("피부 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SKIN_RESULT_NOT_FOUND));
 
         return new SkinResultResponseDto(skinResult);
     }

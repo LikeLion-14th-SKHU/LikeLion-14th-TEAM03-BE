@@ -1,5 +1,7 @@
 package com.skincare.mypage.service;
 
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.repository.OnboardingRepository;
@@ -35,11 +37,11 @@ public class MypageService {
     public Map<String, Object> getMypage(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         SurveyResult survey = surveyResultRepository
                 .findByOnboarding(onboarding)
-                .orElseThrow(() -> new IllegalArgumentException("설문 결과가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         Map<String, Object> result = new HashMap<>();
 

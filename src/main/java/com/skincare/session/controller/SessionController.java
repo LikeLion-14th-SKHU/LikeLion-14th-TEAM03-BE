@@ -1,5 +1,7 @@
 package com.skincare.session.controller;
 
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.session.dto.SessionResponseDto;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
@@ -8,8 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/session")
@@ -33,12 +33,9 @@ public class SessionController {
     public ResponseEntity<SessionResponseDto> checkSession(
             HttpServletRequest request) {
 
-        Optional<Session> sessionOpt = sessionService.findSession(request);
+        Session session = sessionService.findSession(request)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
 
-        if (sessionOpt.isEmpty()) {
-            return ResponseEntity.status(404).build();
-        }
-
-        return ResponseEntity.ok(new SessionResponseDto(sessionOpt.get()));
+        return ResponseEntity.ok(new SessionResponseDto(session));
     }
 }

@@ -1,5 +1,7 @@
 package com.skincare.notification.controller;
 
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.notification.entity.Notification;
 import com.skincare.notification.service.NotificationService;
 import com.skincare.onboarding.entity.Onboarding;
@@ -37,7 +39,7 @@ public class NotificationController {
 
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         List<Notification> notifications =
                 notificationService.getNotifications(onboarding);

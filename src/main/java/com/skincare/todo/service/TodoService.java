@@ -1,5 +1,7 @@
 package com.skincare.todo.service;
 
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.repository.OnboardingRepository;
 import com.skincare.session.entity.Session;
@@ -27,7 +29,7 @@ public class TodoService {
     public void saveCheck(Session session, TodoCheckRequestDto request) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         LocalDate today = LocalDate.now();
 
@@ -58,7 +60,7 @@ public class TodoService {
     public TodoProgressResponseDto getProgress(Session session) {
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new IllegalArgumentException("온보딩 정보가 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         // 총 경과 일수 (온보딩 시작일 ~ 오늘)
         long totalDays = ChronoUnit.DAYS.between(
