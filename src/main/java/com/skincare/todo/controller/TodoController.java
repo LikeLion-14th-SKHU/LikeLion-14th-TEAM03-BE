@@ -1,5 +1,6 @@
 package com.skincare.todo.controller;
 
+import com.skincare.common.response.ApiResponse;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
 import com.skincare.todo.dto.TodoCheckRequestDto;
@@ -21,7 +22,7 @@ public class TodoController {
 
     // 오늘 체크 저장
     @PostMapping("/check")
-    public ResponseEntity<Void> saveCheck(
+    public ResponseEntity<ApiResponse<Void>> saveCheck(
             @RequestBody TodoCheckRequestDto request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
@@ -31,12 +32,12 @@ public class TodoController {
 
         todoService.saveCheck(session, request);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success());
     }
 
     // 진행률 조회
     @GetMapping("/progress")
-    public ResponseEntity<TodoProgressResponseDto> getProgress(
+    public ResponseEntity<ApiResponse<TodoProgressResponseDto>> getProgress(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -45,6 +46,6 @@ public class TodoController {
 
         TodoProgressResponseDto response = todoService.getProgress(session);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
