@@ -1,5 +1,6 @@
 package com.skincare.mypage.controller;
 
+import com.skincare.common.response.ApiResponse;
 import com.skincare.mypage.service.MypageService;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
@@ -20,7 +21,7 @@ public class MypageController {
     private final SessionService sessionService;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getMypage(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMypage(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -29,6 +30,6 @@ public class MypageController {
 
         Map<String, Object> response = mypageService.getMypage(session);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

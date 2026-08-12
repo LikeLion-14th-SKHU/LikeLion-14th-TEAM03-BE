@@ -2,6 +2,7 @@ package com.skincare.notification.controller;
 
 import com.skincare.common.exception.CustomException;
 import com.skincare.common.exception.ErrorCode;
+import com.skincare.common.response.ApiResponse;
 import com.skincare.notification.entity.Notification;
 import com.skincare.notification.service.NotificationService;
 import com.skincare.onboarding.entity.Onboarding;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class NotificationController {
 
     // 알림 목록 조회
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getNotifications(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getNotifications(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -56,6 +56,6 @@ public class NotificationController {
         // 조회 시 읽음 처리
         notificationService.markAllAsRead(onboarding);
 
-        return ResponseEntity.ok(Map.of("notifications", notiList));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("notifications", notiList)));
     }
 }
