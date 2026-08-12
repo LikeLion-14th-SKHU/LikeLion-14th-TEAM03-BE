@@ -1,5 +1,6 @@
 package com.skincare.onboarding.controller;
 
+import com.skincare.common.response.ApiResponse;
 import com.skincare.onboarding.dto.OnboardingRequestDto;
 import com.skincare.onboarding.dto.OnboardingResponseDto;
 import com.skincare.onboarding.service.OnboardingService;
@@ -25,7 +26,7 @@ public class OnboardingController {
 
     // 온보딩 저장
     @PostMapping
-    public ResponseEntity<OnboardingResponseDto> saveOnboarding(
+    public ResponseEntity<ApiResponse<OnboardingResponseDto>> saveOnboarding(
             @Valid @RequestBody OnboardingRequestDto request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
@@ -36,12 +37,12 @@ public class OnboardingController {
         OnboardingResponseDto response =
                 onboardingService.saveOnboarding(session, request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 온보딩 조회
     @GetMapping
-    public ResponseEntity<OnboardingResponseDto> getOnboarding(
+    public ResponseEntity<ApiResponse<OnboardingResponseDto>> getOnboarding(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -51,12 +52,12 @@ public class OnboardingController {
         OnboardingResponseDto response =
                 onboardingService.getOnboarding(session);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // D-Day 재설정
     @PatchMapping("/goal-date")
-    public ResponseEntity<Void> updateGoalDate(
+    public ResponseEntity<ApiResponse<Void>> updateGoalDate(
             @RequestBody Map<String, String> body,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
@@ -67,12 +68,12 @@ public class OnboardingController {
         LocalDate newGoalDate = LocalDate.parse(body.get("goalDate"));
         onboardingService.updateGoalDate(session, newGoalDate);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success());
     }
 
     // 새로 검사
     @PostMapping("/restart")
-    public ResponseEntity<Void> restartOnboarding(
+    public ResponseEntity<ApiResponse<Void>> restartOnboarding(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -81,6 +82,6 @@ public class OnboardingController {
 
         onboardingService.restartOnboarding(session);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }

@@ -3,6 +3,7 @@ package com.skincare.card.controller;
 import com.skincare.card.dto.CardResponseDto;
 import com.skincare.card.dto.ConcernRequestDto;
 import com.skincare.card.service.CardService;
+import com.skincare.common.response.ApiResponse;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ public class CardController {
 
     // 새 고민 입력 + AI 2차 호출
     @PostMapping("/concern")
-    public ResponseEntity<Map<String, Object>> addConcern(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> addConcern(
             @Valid @RequestBody ConcernRequestDto request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
@@ -35,12 +36,12 @@ public class CardController {
         Map<String, Object> response =
                 cardService.addConcern(session, request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 카드 목록 조회
     @GetMapping
-    public ResponseEntity<CardResponseDto> getCards(
+    public ResponseEntity<ApiResponse<CardResponseDto>> getCards(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -49,6 +50,6 @@ public class CardController {
 
         CardResponseDto response = cardService.getCards(session);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

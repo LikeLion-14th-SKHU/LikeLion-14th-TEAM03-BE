@@ -1,5 +1,6 @@
 package com.skincare.skin.controller;
 
+import com.skincare.common.response.ApiResponse;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
 import com.skincare.skin.dto.SkinResultResponseDto;
@@ -22,7 +23,7 @@ public class SkinController {
 
     // 피부 결과 조회 (더보기 세션 1, 2)
     @GetMapping("/result")
-    public ResponseEntity<SkinResultResponseDto> getSkinResult(
+    public ResponseEntity<ApiResponse<SkinResultResponseDto>> getSkinResult(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -31,6 +32,6 @@ public class SkinController {
 
         SkinResultResponseDto response = skinService.getSkinResult(session);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
