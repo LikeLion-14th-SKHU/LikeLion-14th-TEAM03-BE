@@ -47,7 +47,7 @@ com.skincare
 WineLab과 동일한 구조로, 아래 항목만 새 프로젝트 값으로 바꿔서 진행하면 됩니다.
 
 ### 4-1. EC2
-- Ubuntu 22.04 LTS, t2.micro, 20GB, 키페어 `skincare-key.pem`
+- Ubuntu 24.04 LTS, t3.micro (프리티어 대상이 리전/계정에 따라 t2.micro 대신 t3.micro로 표시될 수 있음, 콘솔에 뜨는 프리티어 타입으로 진행), 20GB, 키페어 `skincare-key.pem`
 - 보안그룹 포트: 22(SSH), 80(HTTP), 443(HTTPS), 8081(Blue), 8082(Green)
 - Docker, Docker Compose, Nginx 설치 (WineLab 매뉴얼 3-4 절차 동일)
 
