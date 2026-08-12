@@ -10,9 +10,6 @@ build/
 !**/src/test/**/build/
 
 ### Intellij ###
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
 .idea
 *.iws
 *.iml
@@ -80,24 +77,13 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 ### Intellij Patch ###
-# Sonarlint plugin
 .idea/**/sonarlint/
-
-# SonarQube Plugin
 .idea/**/sonarIssues.xml
-
-# Markdown Navigator plugin
 .idea/**/markdown-navigator.xml
 .idea/**/markdown-navigator-enh.xml
 .idea/**/markdown-navigator/
-
-# Cache file creation bug
 .idea/$CACHE_FILE$
-
-# CodeStream plugin
 .idea/codestream.xml
-
-# Azure Toolkit for IntelliJ plugin
 .idea/**/azureSettings.xml
 
 ### Java ###
@@ -199,6 +185,8 @@ $RECYCLE.BIN/
 ### Env ###
 .env
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,windows,visualstudiocode,reactsrc/main/resources/application-local.yml
+# End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,windows,visualstudiocode,react
 
+# Local
+src/main/resources/application-local.yml
 application-local.yml
