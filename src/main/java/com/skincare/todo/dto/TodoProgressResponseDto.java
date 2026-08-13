@@ -17,8 +17,8 @@ public class TodoProgressResponseDto {
         this.cleansingDone = cleansingDone;
         this.skincareDone = skincareDone;
         this.cleansingRate = totalDays > 0
-                ? (int) ((cleansingDone / (double) totalDays) * 100) : 0;
+                ? Math.min((int) ((cleansingDone / (double) totalDays) * 100), 100) : 0; // ✅ Math.min 추가
         this.skincareRate = totalDays > 0
-                ? (int) ((skincareDone / (double) totalDays) * 100) : 0;
+                ? Math.min((int) ((skincareDone / (double) totalDays) * 100), 100) : 0; // ✅ Math.min 추가
     }
 }

@@ -35,16 +35,15 @@ public class SolutionCard {
     private Integer ddayAtTime;
 
     @Column(name = "status", length = 20)
-    private String status; // HOMECARE / MEDICAL_REFERRAL / MAINTAIN / REDUCE / PAUSE / RECHECK
+    private String status; // MAINTAIN / REDUCE / PAUSE / RECHECK
 
-    // history_cards 전달용 추가 필드
     @Column(name = "prescribed_ingredients", columnDefinition = "TEXT")
-    private String prescribedIngredients; // JSON 배열 형태로 저장
+    private String prescribedIngredients;
 
     @Column(name = "excluded_ingredients", columnDefinition = "TEXT")
-    private String excludedIngredients; // JSON 배열 형태로 저장
+    private String excludedIngredients;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false) // ✅ 수정
     private LocalDateTime createdAt;
 
     @Builder

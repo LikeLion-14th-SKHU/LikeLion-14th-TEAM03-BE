@@ -1,9 +1,7 @@
 package com.skincare.onboarding.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,11 +21,13 @@ public class OnboardingRequestDto {
     private LocalDate goalDate;
 
     @NotNull(message = "나이를 입력해주세요")
-    @Positive(message = "나이는 양수여야 합니다")
+    @Min(value = 1, message = "나이는 1 이상이어야 합니다")
+    @Max(value = 100, message = "나이는 100 이하여야 합니다")
     private Integer age;
 
     @NotBlank(message = "성별을 입력해주세요")
-    private String gender; // MALE / FEMALE
+    @Pattern(regexp = "^(MALE|FEMALE)$", message = "성별은 MALE 또는 FEMALE이어야 합니다")
+    private String gender;
 
     @NotNull(message = "설문 답변을 입력해주세요")
     @Valid

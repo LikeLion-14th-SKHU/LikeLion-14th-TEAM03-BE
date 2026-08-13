@@ -1,8 +1,8 @@
 package com.skincare.onboarding.service;
 
 import com.skincare.onboarding.dto.SurveyAnswerDto;
-import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.entity.Onboarding;
+import com.skincare.onboarding.entity.SurveyResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -70,13 +70,13 @@ public class SurveyCalculationService {
         boolean onMedication = !"none".equals(s.getH2());
         boolean inflammatory = f2 == 4;
 
-        // 8. trouble_scores 10점 환산
-        double tsSebum   = (s.getA1() + s.getA2() - 2) / 6.0 * 9 + 1;
-        double tsPore    = (s.getA3() + s.getA4() - 2) / 6.0 * 9 + 1;
-        double tsDryness = (s.getB1() - 1) / 3.0 * 9 + 1;
-        double tsRedness = (s.getE1() + s.getE2() - 2) / 6.0 * 9 + 1;
-        double tsAcne    = (f1 + f2 - 2) / 6.0 * 9 + 1;
-        double tsMark    = (s.getG1() - 1) / 3.0 * 9 + 1;
+        // 8. trouble_scores 10점 환산 + Math.round 추가 ✅
+        double tsSebum   = Math.round(((s.getA1() + s.getA2() - 2) / 6.0 * 9 + 1) * 10.0) / 10.0;
+        double tsPore    = Math.round(((s.getA3() + s.getA4() - 2) / 6.0 * 9 + 1) * 10.0) / 10.0;
+        double tsDryness = Math.round(((s.getB1() - 1) / 3.0 * 9 + 1) * 10.0) / 10.0;
+        double tsRedness = Math.round(((s.getE1() + s.getE2() - 2) / 6.0 * 9 + 1) * 10.0) / 10.0;
+        double tsAcne    = Math.round(((f1 + f2 - 2) / 6.0 * 9 + 1) * 10.0) / 10.0;
+        double tsMark    = Math.round(((s.getG1() - 1) / 3.0 * 9 + 1) * 10.0) / 10.0;
 
         return SurveyResult.builder()
                 .onboarding(onboarding)

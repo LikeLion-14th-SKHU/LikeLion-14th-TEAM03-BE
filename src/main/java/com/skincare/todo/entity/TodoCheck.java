@@ -35,7 +35,7 @@ public class TodoCheck {
     @Column(name = "skincare_done", nullable = false)
     private Boolean skincareDone = false;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false) // ✅ 수정
     private LocalDateTime createdAt;
 
     @Builder
@@ -48,8 +48,9 @@ public class TodoCheck {
         this.createdAt = LocalDateTime.now();
     }
 
+    // ✅ null 체크 추가
     public void update(Boolean cleansingDone, Boolean skincareDone) {
-        this.cleansingDone = cleansingDone;
-        this.skincareDone = skincareDone;
+        if (cleansingDone != null) this.cleansingDone = cleansingDone;
+        if (skincareDone != null) this.skincareDone = skincareDone;
     }
 }

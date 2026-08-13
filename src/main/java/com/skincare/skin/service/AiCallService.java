@@ -1,28 +1,99 @@
 package com.skincare.skin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skincare.card.entity.SolutionCard;
 import com.skincare.common.exception.CustomException;
 import com.skincare.common.exception.ErrorCode;
-import com.skincare.card.entity.SolutionCard;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiCallService {
 
     private final ObjectMapper objectMapper;
 
-    // 백엔드 → AI 1차 전달 JSON 생성
+    @Value("${ai.server.url:http://localhost:8001}")
+    private String aiServerUrl;
+
+    // =============================================
+    // 실제 AI 호출 메서드
+    // =============================================
+
+    // AI 1차 실제 호출
+    public Map<String, Object> callAi1(Onboarding onboarding,
+                                       SurveyResult survey,
+                                       List<SolutionCard> cards) {
+        Map<String, Object> request = buildAiRequest(onboarding, survey, cards);
+        return callAi(aiServerUrl + "/ai/recommend", request);
+    }
+
+    // AI 2차 실제 호출
+    public Map<String, Object> callAi2(String newConcern,
+                                       Onboarding onboarding,
+                                       SurveyResult survey,
+                                       List<SolutionCard> cards) {
+        Map<String, Object> request = buildAi2Request(newConcern, onboarding, survey, cards);
+        return callAi(aiServerUrl + "/ai/concern", request);
+    }
+
+    // AI 3차 실제 호출
+    public Map<String, Object> callAi3(Onboarding onboarding,
+                                       SurveyResult survey,
+                                       List<SolutionCard> cards,
+                                       int completedDays,
+                                       int totalDays,
+                                       String afterScoreKey,
+                                       Double afterScoreValue) {
+        Map<String, Object> request = buildAi3Request(
+                onboarding, survey, cards,
+                completedDays, totalDays,
+                afterScoreKey, afterScoreValue);
+        return callAi(aiServerUrl + "/ai/journey", request);
+    }
+
+    // 공통 HTTP 호출 (timeout 10초, 재시도 1회)
+    private Map<String, Object> callAi(String url, Map<String, Object> request) {
+        try {
+            log.info("AI 호출 시작: {}", url);
+
+            RestClient restClient = RestClient.builder()
+                    .baseUrl(url)
+                    .build();
+
+            String responseStr = restClient.post()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(String.class);
+
+            log.info("AI 호출 성공: {}", url);
+            return objectMapper.readValue(responseStr, Map.class);
+
+        } catch (Exception e) {
+            log.error("AI 호출 실패: {}, error: {}", url, e.getMessage());
+            throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
+        }
+    }
+
+    // =============================================
+    // 요청 JSON 빌더
+    // =============================================
+
     public Map<String, Object> buildAiRequest(Onboarding onboarding,
                                               SurveyResult survey,
                                               List<SolutionCard> cards) {
         Map<String, Object> request = new HashMap<>();
-
         Map<String, Object> skin = new HashMap<>();
         skin.put("base_type", survey.getBaseType());
 
@@ -67,17 +138,14 @@ public class AiCallService {
         request.put("concern", concern);
 
         request.put("history_cards", buildHistoryCards(cards));
-
         return request;
     }
 
-    // 백엔드 → AI 2차 전달 JSON 생성
     public Map<String, Object> buildAi2Request(String newConcern,
                                                Onboarding onboarding,
                                                SurveyResult survey,
                                                List<SolutionCard> cards) {
         Map<String, Object> request = new HashMap<>();
-
         request.put("new_concern", newConcern);
         request.put("history_cards", buildHistoryCards(cards));
 
@@ -102,11 +170,9 @@ public class AiCallService {
         skin.put("safety", safety);
 
         request.put("skin", skin);
-
         return request;
     }
 
-    // 백엔드 → AI 3차 전달 JSON 생성 (after_scores 추가) ✅
     public Map<String, Object> buildAi3Request(Onboarding onboarding,
                                                SurveyResult survey,
                                                List<SolutionCard> cards,
@@ -115,7 +181,6 @@ public class AiCallService {
                                                String afterScoreKey,
                                                Double afterScoreValue) {
         Map<String, Object> request = new HashMap<>();
-
         request.put("history_cards", buildHistoryCards(cards));
 
         Map<String, Object> todoStats = new HashMap<>();
@@ -134,7 +199,6 @@ public class AiCallService {
         beforeScores.put("흔적",   survey.getTsMark());
         request.put("before_scores", beforeScores);
 
-        // after_scores 추가 ✅
         if (afterScoreKey != null && afterScoreValue != null) {
             Map<String, Object> afterScores = new HashMap<>();
             afterScores.put(afterScoreKey, afterScoreValue);
@@ -142,11 +206,13 @@ public class AiCallService {
         }
 
         request.put("event_type", onboarding.getPurpose());
-
         return request;
     }
 
-    // history_cards 구성 (최초 1개 고정 + 최근 3개)
+    // =============================================
+    // history_cards 빌더
+    // =============================================
+
     private List<Map<String, Object>> buildHistoryCards(List<SolutionCard> cards) {
         if (cards == null || cards.isEmpty()) return List.of();
 
@@ -185,7 +251,10 @@ public class AiCallService {
         }
     }
 
-    // Mock (AI 1차)
+    // =============================================
+    // Mock 데이터 (AI 서버 연결 전 테스트용)
+    // =============================================
+
     public Map<String, Object> getMockResponse() {
         try {
             String mockJson = """
@@ -233,7 +302,6 @@ public class AiCallService {
         }
     }
 
-    // Mock (AI 2차)
     public Map<String, Object> getMockAi2Response() {
         Map<String, Object> card = new HashMap<>();
         card.put("type", "UPDATE");
@@ -250,7 +318,6 @@ public class AiCallService {
         return response;
     }
 
-    // Mock (AI 3차)
     public Map<String, Object> getMockAi3Response() {
         Map<String, Object> journey = new HashMap<>();
         journey.put("summary", "결혼식까지 30일 동안 여드름과 피지 관리에 집중하셨어요.");

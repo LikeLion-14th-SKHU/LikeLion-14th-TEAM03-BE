@@ -34,14 +34,13 @@ public class PlanResult {
     @Column(name = "todo_completion_rate", nullable = false)
     private Integer todoCompletionRate;
 
-    // after_scores 추가 (앵커링 슬라이더로 입력받은 값)
     @Column(name = "after_score_key", length = 20)
-    private String afterScoreKey;   // 예: "피지량", "댕김", "여드름", "붉은기"
+    private String afterScoreKey;
 
     @Column(name = "after_score_value")
-    private Double afterScoreValue; // 1~10점
+    private Double afterScoreValue;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false) // ✅ 수정
     private LocalDateTime createdAt;
 
     @Builder

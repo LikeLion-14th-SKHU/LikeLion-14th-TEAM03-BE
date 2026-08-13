@@ -22,13 +22,16 @@ public class CardResponseDto {
 
     @Getter
     public static class CardDto {
+
+        private static final ObjectMapper MAPPER = new ObjectMapper(); // ✅ static 상수
+
         private final Long cardId;
         private final String cardType;
         private final String cardSummary;
         private final Integer ddayAtTime;
         private final String status;
-        private final List<String> prescribedIngredients; // ✅ 추가
-        private final List<String> excludedIngredients;   // ✅ 추가
+        private final List<String> prescribedIngredients;
+        private final List<String> excludedIngredients;
         private final LocalDateTime createdAt;
 
         public CardDto(SolutionCard card) {
@@ -45,7 +48,7 @@ public class CardResponseDto {
         private List<String> parseJson(String json) {
             if (json == null || json.isBlank()) return List.of();
             try {
-                return new ObjectMapper().readValue(json, List.class);
+                return MAPPER.readValue(json, List.class); // ✅ static 상수 사용
             } catch (JsonProcessingException e) {
                 return List.of();
             }
