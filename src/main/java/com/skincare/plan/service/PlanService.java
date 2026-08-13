@@ -1,5 +1,6 @@
 package com.skincare.plan.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skincare.card.entity.SolutionCard;
 import com.skincare.card.repository.SolutionCardRepository;
 import com.skincare.common.exception.CustomException;
@@ -34,6 +35,7 @@ public class PlanService {
     private final SolutionCardRepository solutionCardRepository;
     private final TodoCheckRepository todoCheckRepository;
     private final AiCallService aiCallService;
+    private final ObjectMapper objectMapper;
 
     // D-Day 종료 처리 + AI 3차 호출
     @Transactional
@@ -48,13 +50,15 @@ public class PlanService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
         // TodoList 진행률 계산
-        long totalDays = ChronoUnit.DAYS.between(
+        long totalDays = Math.max(ChronoUnit.DAYS.between(
                 onboarding.getCreatedAt().toLocalDate(),
-                LocalDate.now()) + 1;
+                LocalDate.now()) + 1, 1);
         int cleansingDone = todoCheckRepository
                 .countByOnboardingAndCleansingDoneTrue(onboarding);
-        int todoCompletionRate = totalDays > 0
-                ? (int) ((cleansingDone / (double) totalDays) * 100) : 0;
+
+        // ✅ Math.min 추가 (100% 초과 방지)
+        int todoCompletionRate = Math.min(
+                (int) ((cleansingDone / (double) totalDays) * 100), 100);
 
         // history_cards 조회
         List<SolutionCard> cards = solutionCardRepository
@@ -63,21 +67,25 @@ public class PlanService {
         // AI 3차 호출
         Map<String, Object> aiResponse = aiCallService.getMockAi3Response();
         // 실제 연동 시:
-        // Map<String, Object> aiResponse = aiCallService
-        //     .buildAi3Request(onboarding, survey, cards,
-        //                      cleansingDone, (int) totalDays,
-        //                      request.getAfterScoreKey(),
-        //                      request.getAfterScoreValue());
-        // → POST /ai/journey 호출
+        // Map<String, Object> aiResponse = aiCallService.callAi3(
+        //     onboarding, survey, cards,
+        //     cleansingDone, (int) totalDays,
+        //     request.getAfterScoreKey(),
+        //     request.getAfterScoreValue());
 
         Map<String, Object> journey = (Map<String, Object>) aiResponse.get("journey");
 
-        // highlights 리스트 → 문자열 변환
+        // ✅ highlights JSON 문자열로 저장
+        String improvementPoints = "";
         Object highlights = journey.get("highlights");
-        String improvementPoints = highlights != null
-                ? highlights.toString() : "";
+        if (highlights != null) {
+            try {
+                improvementPoints = objectMapper.writeValueAsString(highlights);
+            } catch (Exception e) {
+                improvementPoints = highlights.toString();
+            }
+        }
 
-        // plan_results 저장 (after_scores 포함)
         PlanResult planResult = PlanResult.builder()
                 .onboarding(onboarding)
                 .journeySummary((String) journey.get("summary"))
@@ -89,7 +97,6 @@ public class PlanService {
                 .build();
         planResultRepository.save(planResult);
 
-        // 플랜 종료 (is_active = false → 알림 자동 중단)
         onboarding.deactivate();
 
         return new PlanResultResponseDto(planResult);
@@ -98,13 +105,10 @@ public class PlanService {
     // 종료 결과 조회
     @Transactional(readOnly = true)
     public PlanResultResponseDto getPlanResult(Session session) {
+        // ✅ orElseThrow로 통일
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElse(null);
-
-        if (onboarding == null) {
-            throw new CustomException(ErrorCode.ONBOARDING_NOT_FOUND);
-        }
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         PlanResult planResult = planResultRepository
                 .findByOnboarding(onboarding)

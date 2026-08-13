@@ -1,5 +1,6 @@
 package com.skincare.mypage.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skincare.common.exception.CustomException;
 import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.entity.Onboarding;
@@ -32,6 +33,7 @@ public class MypageService {
     private final SkinResultRepository skinResultRepository;
     private final PlanResultRepository planResultRepository;
     private final TodoCheckRepository todoCheckRepository;
+    private final ObjectMapper objectMapper; // ✅ 추가
 
     @Transactional(readOnly = true)
     public Map<String, Object> getMypage(Session session) {
@@ -64,12 +66,12 @@ public class MypageService {
         Optional<SkinResult> skinResult = skinResultRepository
                 .findByOnboarding(onboarding);
         skinResult.ifPresent(sr ->
-                result.put("skinResult", new SkinResultResponseDto(sr)));
+                result.put("skinResult", new SkinResultResponseDto(sr, objectMapper))); // ✅ objectMapper 전달
 
         // TodoList 진행률
-        long totalDays = ChronoUnit.DAYS.between(
+        long totalDays = Math.max(ChronoUnit.DAYS.between(
                 onboarding.getCreatedAt().toLocalDate(),
-                LocalDate.now()) + 1;
+                LocalDate.now()) + 1, 1);
         int cleansingDone = todoCheckRepository
                 .countByOnboardingAndCleansingDoneTrue(onboarding);
         int skincareDone = todoCheckRepository
@@ -79,21 +81,23 @@ public class MypageService {
                 "totalDays", totalDays,
                 "cleansingDone", cleansingDone,
                 "skincareDone", skincareDone,
-                "cleansingRate", totalDays > 0
-                        ? (int) ((cleansingDone / (double) totalDays) * 100) : 0,
-                "skincareRate", totalDays > 0
-                        ? (int) ((skincareDone / (double) totalDays) * 100) : 0
+                "cleansingRate", Math.min((int) ((cleansingDone / (double) totalDays) * 100), 100), // ✅ Math.min
+                "skincareRate", Math.min((int) ((skincareDone / (double) totalDays) * 100), 100)    // ✅ Math.min
         ));
 
         // D-Day 종료 결과 (있으면)
         Optional<PlanResult> planResult = planResultRepository
                 .findByOnboarding(onboarding);
-        planResult.ifPresent(pr -> result.put("planResult", Map.of(
-                "journeySummary", pr.getJourneySummary(),
-                "improvementPoints", pr.getImprovementPoints(),
-                "recommendationNext", pr.getRecommendationNext(),
-                "todoCompletionRate", pr.getTodoCompletionRate()
-        )));
+        planResult.ifPresent(pr -> {
+            Map<String, Object> planResultMap = new HashMap<>();
+            planResultMap.put("journeySummary", pr.getJourneySummary());
+            planResultMap.put("improvementPoints", pr.getImprovementPoints());
+            planResultMap.put("recommendationNext", pr.getRecommendationNext());
+            planResultMap.put("todoCompletionRate", pr.getTodoCompletionRate());
+            planResultMap.put("afterScoreKey", pr.getAfterScoreKey() != null ? pr.getAfterScoreKey() : "");       // ✅ 추가
+            planResultMap.put("afterScoreValue", pr.getAfterScoreValue() != null ? pr.getAfterScoreValue() : 0.0); // ✅ 추가
+            result.put("planResult", planResultMap);
+        });
 
         return result;
     }

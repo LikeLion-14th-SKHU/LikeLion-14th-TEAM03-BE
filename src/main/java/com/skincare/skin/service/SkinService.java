@@ -1,10 +1,10 @@
 package com.skincare.skin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skincare.common.exception.CustomException;
-import com.skincare.common.exception.ErrorCode;
 import com.skincare.card.entity.SolutionCard;
 import com.skincare.card.repository.SolutionCardRepository;
+import com.skincare.common.exception.CustomException;
+import com.skincare.common.exception.ErrorCode;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.repository.OnboardingRepository;
@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,16 +45,19 @@ public class SkinService {
 
         // Mock 데이터 사용 (AI 연동 전)
         Map<String, Object> aiResponse = aiCallService.getMockResponse();
+        // 실제 연동 시:
+        // Map<String, Object> aiResponse = aiCallService.callAi1(onboarding, survey, cards);
 
         try {
-            // cosmetic + cleansing + skincare_order + type_description 저장
             String cosmeticJson = objectMapper
                     .writeValueAsString(aiResponse.get("cosmetic"));
-            String routinesJson = objectMapper.writeValueAsString(Map.of(
-                    "cleansing", aiResponse.get("cleansing"),
-                    "skincare_order", aiResponse.get("skincare_order"),
-                    "type_description", aiResponse.get("type_description")
-            ));
+
+            // ✅ Map.of() → HashMap으로 교체 (null 방지)
+            Map<String, Object> routinesMap = new HashMap<>();
+            routinesMap.put("cleansing", aiResponse.get("cleansing"));
+            routinesMap.put("skincare_order", aiResponse.get("skincare_order"));
+            routinesMap.put("type_description", aiResponse.getOrDefault("type_description", ""));
+            String routinesJson = objectMapper.writeValueAsString(routinesMap);
 
             // 기존 결과 있으면 UPDATE, 없으면 INSERT
             SkinResult skinResult = skinResultRepository
@@ -71,7 +75,6 @@ public class SkinService {
                 skinResultRepository.save(skinResult);
             }
 
-            // card 정보 반환 (CardService에서 저장)
             return (Map<String, Object>) aiResponse.get("card");
 
         } catch (Exception e) {
@@ -90,6 +93,7 @@ public class SkinService {
                 .findByOnboarding(onboarding)
                 .orElseThrow(() -> new CustomException(ErrorCode.SKIN_RESULT_NOT_FOUND));
 
-        return new SkinResultResponseDto(skinResult);
+        // ✅ objectMapper 전달
+        return new SkinResultResponseDto(skinResult, objectMapper);
     }
 }

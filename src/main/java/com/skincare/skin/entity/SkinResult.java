@@ -28,7 +28,7 @@ public class SkinResult {
     @Column(name = "routines_json", nullable = false, columnDefinition = "LONGTEXT")
     private String routinesJson;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false) // ✅ 수정
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
