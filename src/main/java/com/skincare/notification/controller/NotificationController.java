@@ -41,6 +41,9 @@ public class NotificationController {
                 .findBySessionAndIsActiveTrue(session)
                 .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
+        // ✅ 읽음 처리 먼저 → 조회 순서 개선
+        notificationService.markAllAsRead(onboarding);
+
         List<Notification> notifications =
                 notificationService.getNotifications(onboarding);
 
@@ -52,9 +55,6 @@ public class NotificationController {
                         "createdAt", n.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
-
-        // 조회 시 읽음 처리
-        notificationService.markAllAsRead(onboarding);
 
         return ResponseEntity.ok(ApiResponse.success(Map.of("notifications", notiList)));
     }

@@ -14,8 +14,8 @@ public class SkinResultResponseDto {
     private final Object routines;
     private final LocalDateTime updatedAt;
 
-    public SkinResultResponseDto(SkinResult skinResult) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    // ✅ ObjectMapper 생성자 주입으로 변경
+    public SkinResultResponseDto(SkinResult skinResult, ObjectMapper objectMapper) {
         Object cosmeticObj;
         Object routinesObj;
 

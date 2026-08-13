@@ -90,7 +90,7 @@ public class SurveyResult {
     @Column(name = "concern_raw", nullable = false, columnDefinition = "TEXT")
     private String concernRaw;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false) // ✅ 수정
     private LocalDateTime createdAt;
 
     @Builder
@@ -106,13 +106,13 @@ public class SurveyResult {
                         String concernRaw) {
         this.onboarding = onboarding;
         this.baseType = baseType;
-        this.dehydrated = dehydrated;
-        this.sensitive = sensitive;
-        this.acneFlag = acneFlag;
-        this.markProne = markProne;
-        this.onMedication = onMedication;
+        this.dehydrated = dehydrated != null ? dehydrated : false;       // ✅ null 체크
+        this.sensitive = sensitive != null ? sensitive : false;           // ✅ null 체크
+        this.acneFlag = acneFlag != null ? acneFlag : false;             // ✅ null 체크
+        this.markProne = markProne != null ? markProne : false;          // ✅ null 체크
+        this.onMedication = onMedication != null ? onMedication : false; // ✅ null 체크
         this.retinolHistory = retinolHistory;
-        this.inflammatory = inflammatory;
+        this.inflammatory = inflammatory != null ? inflammatory : false;  // ✅ null 체크
         this.sebumRaw = sebumRaw;
         this.hydraRaw = hydraRaw;
         this.sensRaw = sensRaw;

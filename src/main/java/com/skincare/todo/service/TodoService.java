@@ -33,7 +33,6 @@ public class TodoService {
 
         LocalDate today = LocalDate.now();
 
-        // 오늘 체크 있으면 UPDATE, 없으면 INSERT
         Optional<TodoCheck> existing = todoCheckRepository
                 .findByOnboardingAndCheckDate(onboarding, today);
 
@@ -62,10 +61,10 @@ public class TodoService {
                 .findBySessionAndIsActiveTrue(session)
                 .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
-        // 총 경과 일수 (온보딩 시작일 ~ 오늘)
-        long totalDays = ChronoUnit.DAYS.between(
+        // ✅ totalDays Math.max 추가 (음수 방지)
+        long totalDays = Math.max(ChronoUnit.DAYS.between(
                 onboarding.getCreatedAt().toLocalDate(),
-                LocalDate.now()) + 1;
+                LocalDate.now()) + 1, 1);
 
         int cleansingDone = todoCheckRepository
                 .countByOnboardingAndCleansingDoneTrue(onboarding);

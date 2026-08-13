@@ -1,6 +1,7 @@
 package com.skincare.onboarding.controller;
 
 import com.skincare.common.response.ApiResponse;
+import com.skincare.onboarding.dto.GoalDateUpdateDto;
 import com.skincare.onboarding.dto.OnboardingRequestDto;
 import com.skincare.onboarding.dto.OnboardingResponseDto;
 import com.skincare.onboarding.service.OnboardingService;
@@ -12,9 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/onboarding")
@@ -58,15 +56,14 @@ public class OnboardingController {
     // D-Day 재설정
     @PatchMapping("/goal-date")
     public ResponseEntity<ApiResponse<Void>> updateGoalDate(
-            @RequestBody Map<String, String> body,
+            @Valid @RequestBody GoalDateUpdateDto request, // ✅ DTO로 변경
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
         Session session = sessionService
                 .getOrCreateSession(httpRequest, httpResponse);
 
-        LocalDate newGoalDate = LocalDate.parse(body.get("goalDate"));
-        onboardingService.updateGoalDate(session, newGoalDate);
+        onboardingService.updateGoalDate(session, request.getGoalDate());
 
         return ResponseEntity.ok(ApiResponse.success());
     }
