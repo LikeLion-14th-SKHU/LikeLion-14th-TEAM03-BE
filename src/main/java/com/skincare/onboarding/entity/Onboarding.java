@@ -41,7 +41,10 @@ public class Onboarding {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "noti_enabled", nullable = false) // ✅ 추가
+    private Boolean notiEnabled = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
@@ -57,6 +60,7 @@ public class Onboarding {
         this.age = age;
         this.gender = gender;
         this.isActive = true;
+        this.notiEnabled = true; // ✅ 추가
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -71,8 +75,15 @@ public class Onboarding {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // ✅ 알림 토글 메서드 추가
+    public void toggleNoti() {
+        this.notiEnabled = !this.notiEnabled;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public long getDDay() {
-        return java.time.temporal.ChronoUnit.DAYS.between(
+        long days = java.time.temporal.ChronoUnit.DAYS.between(
                 LocalDate.now(), this.goalDate);
+        return Math.max(days, 0);
     }
 }

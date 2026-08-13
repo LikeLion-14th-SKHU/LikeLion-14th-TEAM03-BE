@@ -41,6 +41,9 @@ public class NotificationController {
                 .findBySessionAndIsActiveTrue(session)
                 .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
+        // 읽음 처리 먼저
+        notificationService.markAllAsRead(onboarding);
+
         List<Notification> notifications =
                 notificationService.getNotifications(onboarding);
 
@@ -53,9 +56,23 @@ public class NotificationController {
                 ))
                 .collect(Collectors.toList());
 
-        // 조회 시 읽음 처리
-        notificationService.markAllAsRead(onboarding);
-
         return ResponseEntity.ok(ApiResponse.success(Map.of("notifications", notiList)));
+    }
+
+    // ✅ 알림 ON/OFF 토글
+    @PatchMapping("/toggle")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> toggleNoti(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+
+        Session session = sessionService
+                .getOrCreateSession(httpRequest, httpResponse);
+
+        boolean notiEnabled = notificationService.toggleNoti(session);
+
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+                "notiEnabled", notiEnabled,
+                "message", notiEnabled ? "알림이 활성화되었습니다" : "알림이 비활성화되었습니다"
+        )));
     }
 }

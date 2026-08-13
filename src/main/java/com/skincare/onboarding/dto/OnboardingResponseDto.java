@@ -20,6 +20,7 @@ public class OnboardingResponseDto {
     private final String baseType;
     private final FlagsDto flags;
     private final SafetyDto safety;
+    private final Boolean notiEnabled; // ✅ 추가
     private final LocalDateTime createdAt;
 
     public OnboardingResponseDto(Onboarding onboarding, SurveyResult survey) {
@@ -33,6 +34,7 @@ public class OnboardingResponseDto {
         this.baseType = survey.getBaseType();
         this.flags = new FlagsDto(survey);
         this.safety = new SafetyDto(survey);
+        this.notiEnabled = onboarding.getNotiEnabled(); // ✅ 추가
         this.createdAt = onboarding.getCreatedAt();
     }
 
