@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.time.Duration;
 import java.util.*;
 
 @Slf4j
@@ -30,7 +29,6 @@ public class AiCallService {
     // 실제 AI 호출 메서드
     // =============================================
 
-    // AI 1차 실제 호출
     public Map<String, Object> callAi1(Onboarding onboarding,
                                        SurveyResult survey,
                                        List<SolutionCard> cards) {
@@ -38,7 +36,6 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/recommend", request);
     }
 
-    // AI 2차 실제 호출
     public Map<String, Object> callAi2(String newConcern,
                                        Onboarding onboarding,
                                        SurveyResult survey,
@@ -47,7 +44,6 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/concern", request);
     }
 
-    // AI 3차 실제 호출
     public Map<String, Object> callAi3(Onboarding onboarding,
                                        SurveyResult survey,
                                        List<SolutionCard> cards,
@@ -62,24 +58,19 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/journey", request);
     }
 
-    // 공통 HTTP 호출 (timeout 10초, 재시도 1회)
     private Map<String, Object> callAi(String url, Map<String, Object> request) {
         try {
             log.info("AI 호출 시작: {}", url);
-
             RestClient restClient = RestClient.builder()
                     .baseUrl(url)
                     .build();
-
             String responseStr = restClient.post()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
                     .body(String.class);
-
             log.info("AI 호출 성공: {}", url);
             return objectMapper.readValue(responseStr, Map.class);
-
         } catch (Exception e) {
             log.error("AI 호출 실패: {}, error: {}", url, e.getMessage());
             throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
@@ -215,7 +206,6 @@ public class AiCallService {
 
     private List<Map<String, Object>> buildHistoryCards(List<SolutionCard> cards) {
         if (cards == null || cards.isEmpty()) return List.of();
-
         List<Map<String, Object>> result = new ArrayList<>();
 
         cards.stream()
@@ -287,6 +277,8 @@ public class AiCallService {
                     "basic_steps": ["세안", "토너", "세럼·앰플", "크림", "선크림(낮)"],
                     "application_rules": ["묽은 것부터 바릅니다."]
                   },
+                  "products_detail": [],
+                  "needs_medical_consult": false,
                   "card": {
                     "type": "INITIAL",
                     "dday_at_time": 30,
@@ -302,6 +294,7 @@ public class AiCallService {
         }
     }
 
+    // ✅ Mock 2차 - 추가 필드 반영
     public Map<String, Object> getMockAi2Response() {
         Map<String, Object> card = new HashMap<>();
         card.put("type", "UPDATE");
@@ -312,12 +305,16 @@ public class AiCallService {
         card.put("cautions", List.of("줄여도 붉은기가 3일 이상 지속되면 중단해 주세요"));
         card.put("prescribed_ingredients", List.of("히알루론산", "세라마이드"));
         card.put("excluded_ingredients", List.of("살리실산"));
+        card.put("products", List.of());                // ✅ 추가
+        card.put("products_detail", List.of());         // ✅ 추가
+        card.put("adjusted_ingredients", List.of());    // ✅ 추가
 
         Map<String, Object> response = new HashMap<>();
         response.put("card", card);
         return response;
     }
 
+    // ✅ Mock 3차 - 추가 필드 반영
     public Map<String, Object> getMockAi3Response() {
         Map<String, Object> journey = new HashMap<>();
         journey.put("summary", "결혼식까지 30일 동안 여드름과 피지 관리에 집중하셨어요.");
@@ -327,6 +324,13 @@ public class AiCallService {
         ));
         journey.put("next_step", "이번에 미뤄둔 레티놀은 지금부터 시작하시면 좋아요.");
         journey.put("closing", "자외선 차단은 계속 지켜주세요.");
+        journey.put("score_change", Map.of(    // ✅ 추가
+                "item", "피지량",
+                "before", 8,
+                "after", 4,
+                "delta", 4
+        ));
+        journey.put("completion_rate", 0.73);  // ✅ 추가
 
         Map<String, Object> response = new HashMap<>();
         response.put("journey", journey);

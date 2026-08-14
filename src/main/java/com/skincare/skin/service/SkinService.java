@@ -39,7 +39,6 @@ public class SkinService {
                 .findByOnboarding(onboarding)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
-        // history_cards 조회
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);
 
@@ -52,12 +51,20 @@ public class SkinService {
             String cosmeticJson = objectMapper
                     .writeValueAsString(aiResponse.get("cosmetic"));
 
-            // ✅ Map.of() → HashMap으로 교체 (null 방지)
             Map<String, Object> routinesMap = new HashMap<>();
             routinesMap.put("cleansing", aiResponse.get("cleansing"));
             routinesMap.put("skincare_order", aiResponse.get("skincare_order"));
             routinesMap.put("type_description", aiResponse.getOrDefault("type_description", ""));
             String routinesJson = objectMapper.writeValueAsString(routinesMap);
+
+            // ✅ products_detail 저장
+            String productsDetailJson = aiResponse.get("products_detail") != null
+                    ? objectMapper.writeValueAsString(aiResponse.get("products_detail"))
+                    : null;
+
+            // ✅ needs_medical_consult 저장
+            Boolean needsMedicalConsult = (Boolean) aiResponse
+                    .getOrDefault("needs_medical_consult", false);
 
             // 기존 결과 있으면 UPDATE, 없으면 INSERT
             SkinResult skinResult = skinResultRepository
@@ -65,12 +72,15 @@ public class SkinService {
                     .orElse(null);
 
             if (skinResult != null) {
-                skinResult.update(cosmeticJson, routinesJson);
+                skinResult.update(cosmeticJson, routinesJson,
+                        productsDetailJson, needsMedicalConsult); // ✅ 추가
             } else {
                 skinResult = SkinResult.builder()
                         .onboarding(onboarding)
                         .cosmeticJson(cosmeticJson)
                         .routinesJson(routinesJson)
+                        .productsDetailJson(productsDetailJson)     // ✅ 추가
+                        .needsMedicalConsult(needsMedicalConsult)   // ✅ 추가
                         .build();
                 skinResultRepository.save(skinResult);
             }
@@ -93,7 +103,6 @@ public class SkinService {
                 .findByOnboarding(onboarding)
                 .orElseThrow(() -> new CustomException(ErrorCode.SKIN_RESULT_NOT_FOUND));
 
-        // ✅ objectMapper 전달
         return new SkinResultResponseDto(skinResult, objectMapper);
     }
 }
