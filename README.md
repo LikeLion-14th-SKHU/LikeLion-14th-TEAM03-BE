@@ -26,7 +26,9 @@ com.skincare
 ├── skin         (controller/dto/entity/service/repository - 비어있음, 추후 작업)
 ├── card         (controller/dto/entity/service/repository - 비어있음, 추후 작업)
 ├── todo         (controller/dto/entity/service/repository - 비어있음, 추후 작업)
-├── notification (entity/service/repository - 비어있음, 추후 작업)
+├── 
+
+notification (entity/service/repository - 비어있음, 추후 작업)
 ├── plan         (controller/dto/entity/service/repository - 비어있음, 추후 작업)
 └── mypage       (controller/dto/service - 비어있음, 추후 작업)
 ```
