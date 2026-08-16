@@ -9,7 +9,7 @@ services:
       - DB_HOST=${DB_HOST}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - AI_SERVER_URL=http://host.docker.internal:8001
+      - AI_SERVER_URL=https://skin-care-ai-a4ep.onrender.com
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -31,7 +31,7 @@ services:
       - DB_HOST=${DB_HOST}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - AI_SERVER_URL=http://host.docker.internal:8001
+      - AI_SERVER_URL=https://skin-care-ai-a4ep.onrender.com
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
