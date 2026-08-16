@@ -41,4 +41,4 @@ management:
 
 ai:
   server:
-    url: http://localhost:8001
+    url: https://skin-care-ai-a4ep.onrender.com
