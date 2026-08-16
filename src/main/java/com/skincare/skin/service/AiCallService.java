@@ -22,7 +22,7 @@ public class AiCallService {
 
     private final ObjectMapper objectMapper;
 
-    @Value("${ai.server.url:http://localhost:8001}")
+    @Value("${ai.server.url:https://skin-care-ai-a4ep.onrender.com}")
     private String aiServerUrl;
 
     public Map<String, Object> callAi1(Onboarding onboarding,
@@ -54,19 +54,17 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/journey", request);
     }
 
-    // ✅ baseUrl 제거하고 uri 직접 사용
+    // ✅ String 변환 제거 → Map 객체 그대로 전달
     private Map<String, Object> callAi(String url, Map<String, Object> request) {
         try {
             log.info("AI 호출 시작: {}", url);
-            String requestBody = objectMapper.writeValueAsString(request);
-            log.info("AI 요청 Body: {}", requestBody);
 
             RestClient restClient = RestClient.create();
 
             String responseStr = restClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
+                    .body(request)
                     .retrieve()
                     .body(String.class);
 
