@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SurveyCalculationService {
 
-    private static final double HIGH = 0.55;
+    private static final double HIGH = 0.50;
 
     public SurveyResult calculate(Onboarding onboarding, SurveyAnswerDto s, String concernRaw) {
 
