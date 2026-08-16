@@ -37,7 +37,6 @@ public class PlanService {
     private final AiCallService aiCallService;
     private final ObjectMapper objectMapper;
 
-    // D-Day 종료 처리 + AI 3차 호출
     @Transactional
     public PlanResultResponseDto finishPlan(Session session,
                                             PlanFinishRequestDto request) {
@@ -49,33 +48,39 @@ public class PlanService {
                 .findByOnboarding(onboarding)
                 .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
 
-        // TodoList 진행률 계산
         long totalDays = Math.max(ChronoUnit.DAYS.between(
                 onboarding.getCreatedAt().toLocalDate(),
                 LocalDate.now()) + 1, 1);
+
         int cleansingDone = todoCheckRepository
                 .countByOnboardingAndCleansingDoneTrue(onboarding);
 
-        // ✅ Math.min 추가 (100% 초과 방지)
         int todoCompletionRate = Math.min(
                 (int) ((cleansingDone / (double) totalDays) * 100), 100);
 
-        // history_cards 조회
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);
 
-        // AI 3차 호출
-        Map<String, Object> aiResponse = aiCallService.getMockAi3Response();
-        // 실제 연동 시:
-        // Map<String, Object> aiResponse = aiCallService.callAi3(
-        //     onboarding, survey, cards,
-        //     cleansingDone, (int) totalDays,
-        //     request.getAfterScoreKey(),
-        //     request.getAfterScoreValue());
+        // ✅ 실제 AI 3차 연동
+        Map<String, Object> aiResponse = aiCallService.callAi3(
+                onboarding, survey, cards,
+                cleansingDone, (int) totalDays,
+                request.getAfterScoreKey(),
+                request.getAfterScoreValue());
+        // Mock 사용 시:
+        // Map<String, Object> aiResponse = aiCallService.getMockAi3Response();
 
+        // journey 파싱
         Map<String, Object> journey = (Map<String, Object>) aiResponse.get("journey");
 
-        // ✅ highlights JSON 문자열로 저장
+        // ✅ score_change, completion_rate는 최상단(root)에서 파싱
+        Map<String, Object> scoreChange = aiResponse.containsKey("score_change")
+                ? (Map<String, Object>) aiResponse.get("score_change")
+                : null;
+
+        Object completionRate = aiResponse.getOrDefault("completion_rate", null);
+
+        // highlights JSON 저장
         String improvementPoints = "";
         Object highlights = journey.get("highlights");
         if (highlights != null) {
@@ -95,17 +100,15 @@ public class PlanService {
                 .afterScoreKey(request.getAfterScoreKey())
                 .afterScoreValue(request.getAfterScoreValue())
                 .build();
-        planResultRepository.save(planResult);
 
+        planResultRepository.save(planResult);
         onboarding.deactivate();
 
         return new PlanResultResponseDto(planResult);
     }
 
-    // 종료 결과 조회
     @Transactional(readOnly = true)
     public PlanResultResponseDto getPlanResult(Session session) {
-        // ✅ orElseThrow로 통일
         Onboarding onboarding = onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
                 .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));

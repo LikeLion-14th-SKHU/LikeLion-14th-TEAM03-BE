@@ -30,7 +30,7 @@ public class CardService {
     private final AiCallService aiCallService;
     private final ObjectMapper objectMapper;
 
-    // ✅ 공통 카드 생성 메서드 (중복 제거)
+    // 공통 카드 생성 메서드
     private void createCard(Onboarding onboarding,
                             Map<String, Object> cardData,
                             String cardType) {
@@ -39,6 +39,7 @@ public class CardService {
                     cardData.get("prescribed_ingredients"));
             String excludedJson = objectMapper.writeValueAsString(
                     cardData.get("excluded_ingredients"));
+
             SolutionCard card = SolutionCard.builder()
                     .onboarding(onboarding)
                     .cardType(cardType)
@@ -49,6 +50,7 @@ public class CardService {
                     .prescribedIngredients(prescribedJson)
                     .excludedIngredients(excludedJson)
                     .build();
+
             solutionCardRepository.save(card);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
@@ -84,11 +86,11 @@ public class CardService {
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);
 
-        // AI 2차 호출
-        Map<String, Object> aiResponse = aiCallService.getMockAi2Response();
-        // 실제 연동 시:
-        // Map<String, Object> aiResponse = aiCallService
-        //     .callAi2(request.getNewConcern(), onboarding, survey, cards);
+        // ✅ 실제 AI 2차 연동
+        Map<String, Object> aiResponse = aiCallService
+                .callAi2(request.getNewConcern(), onboarding, survey, cards);
+        // Mock 사용 시:
+        // Map<String, Object> aiResponse = aiCallService.getMockAi2Response();
 
         Map<String, Object> cardData = (Map<String, Object>) aiResponse.get("card");
 
@@ -108,6 +110,7 @@ public class CardService {
                     .prescribedIngredients(prescribedJson)
                     .excludedIngredients(excludedJson)
                     .build();
+
             solutionCardRepository.save(newCard);
 
             return Map.of(
@@ -116,6 +119,7 @@ public class CardService {
                     "cautions", cardData.getOrDefault("cautions", List.of()),
                     "medicalReferral", "RECHECK".equals(cardData.get("action"))
             );
+
         } catch (Exception e) {
             throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }

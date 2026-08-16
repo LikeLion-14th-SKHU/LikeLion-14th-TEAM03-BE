@@ -42,10 +42,10 @@ public class SkinService {
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);
 
-        // Mock 데이터 사용 (AI 연동 전)
-        Map<String, Object> aiResponse = aiCallService.getMockResponse();
-        // 실제 연동 시:
-        // Map<String, Object> aiResponse = aiCallService.callAi1(onboarding, survey, cards);
+        // ✅ 실제 AI 연동
+        Map<String, Object> aiResponse = aiCallService.callAi1(onboarding, survey, cards);
+        // Mock 사용 시:
+        // Map<String, Object> aiResponse = aiCallService.getMockResponse();
 
         try {
             String cosmeticJson = objectMapper
@@ -57,30 +57,27 @@ public class SkinService {
             routinesMap.put("type_description", aiResponse.getOrDefault("type_description", ""));
             String routinesJson = objectMapper.writeValueAsString(routinesMap);
 
-            // ✅ products_detail 저장
             String productsDetailJson = aiResponse.get("products_detail") != null
                     ? objectMapper.writeValueAsString(aiResponse.get("products_detail"))
                     : null;
 
-            // ✅ needs_medical_consult 저장
             Boolean needsMedicalConsult = (Boolean) aiResponse
                     .getOrDefault("needs_medical_consult", false);
 
-            // 기존 결과 있으면 UPDATE, 없으면 INSERT
             SkinResult skinResult = skinResultRepository
                     .findByOnboarding(onboarding)
                     .orElse(null);
 
             if (skinResult != null) {
                 skinResult.update(cosmeticJson, routinesJson,
-                        productsDetailJson, needsMedicalConsult); // ✅ 추가
+                        productsDetailJson, needsMedicalConsult);
             } else {
                 skinResult = SkinResult.builder()
                         .onboarding(onboarding)
                         .cosmeticJson(cosmeticJson)
                         .routinesJson(routinesJson)
-                        .productsDetailJson(productsDetailJson)     // ✅ 추가
-                        .needsMedicalConsult(needsMedicalConsult)   // ✅ 추가
+                        .productsDetailJson(productsDetailJson)
+                        .needsMedicalConsult(needsMedicalConsult)
                         .build();
                 skinResultRepository.save(skinResult);
             }
