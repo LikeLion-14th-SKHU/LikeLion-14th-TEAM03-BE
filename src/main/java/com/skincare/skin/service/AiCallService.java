@@ -25,10 +25,6 @@ public class AiCallService {
     @Value("${ai.server.url:http://localhost:8001}")
     private String aiServerUrl;
 
-    // =============================================
-    // 실제 AI 호출 메서드
-    // =============================================
-
     public Map<String, Object> callAi1(Onboarding onboarding,
                                        SurveyResult survey,
                                        List<SolutionCard> cards) {
@@ -58,11 +54,9 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/journey", request);
     }
 
-    // ✅ ObjectMapper로 명시적 직렬화
     private Map<String, Object> callAi(String url, Map<String, Object> request) {
         try {
             log.info("AI 호출 시작: {}", url);
-
             String requestBody = objectMapper.writeValueAsString(request);
             log.info("AI 요청 Body: {}", requestBody);
 
@@ -84,10 +78,6 @@ public class AiCallService {
             throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
         }
     }
-
-    // =============================================
-    // 요청 JSON 빌더
-    // =============================================
 
     public Map<String, Object> buildAiRequest(Onboarding onboarding,
                                               SurveyResult survey,
@@ -116,13 +106,14 @@ public class AiCallService {
         axisScores.put("hydra", Math.round(hydraN * 100.0) / 100.0);
         skin.put("axis_scores", axisScores);
 
+        // ✅ double → int 변환
         Map<String, Object> troubleScores = new HashMap<>();
-        troubleScores.put("피지량", survey.getTsSebum());
-        troubleScores.put("모공",   survey.getTsPore());
-        troubleScores.put("댕김",   survey.getTsDryness());
-        troubleScores.put("붉은기", survey.getTsRedness());
-        troubleScores.put("여드름", survey.getTsAcne());
-        troubleScores.put("흔적",   survey.getTsMark());
+        troubleScores.put("피지량", (int) Math.round(survey.getTsSebum()));
+        troubleScores.put("모공",   (int) Math.round(survey.getTsPore()));
+        troubleScores.put("댕김",   (int) Math.round(survey.getTsDryness()));
+        troubleScores.put("붉은기", (int) Math.round(survey.getTsRedness()));
+        troubleScores.put("여드름", (int) Math.round(survey.getTsAcne()));
+        troubleScores.put("흔적",   (int) Math.round(survey.getTsMark()));
         skin.put("trouble_scores", troubleScores);
 
         request.put("skin", skin);
@@ -186,16 +177,18 @@ public class AiCallService {
         todoStats.put("total_days", totalDays);
         todoStats.put("completed_days", completedDays);
         todoStats.put("rate", totalDays > 0
-                ? Math.round((completedDays / (double) totalDays) * 100.0) / 100.0 : 0.0);
+                ? Math.round((completedDays / (double) totalDays) * 100.0) / 100.0
+                : 0.0);
         request.put("todo_stats", todoStats);
 
+        // ✅ double → int 변환
         Map<String, Object> beforeScores = new HashMap<>();
-        beforeScores.put("피지량", survey.getTsSebum());
-        beforeScores.put("모공",   survey.getTsPore());
-        beforeScores.put("댕김",   survey.getTsDryness());
-        beforeScores.put("붉은기", survey.getTsRedness());
-        beforeScores.put("여드름", survey.getTsAcne());
-        beforeScores.put("흔적",   survey.getTsMark());
+        beforeScores.put("피지량", (int) Math.round(survey.getTsSebum()));
+        beforeScores.put("모공",   (int) Math.round(survey.getTsPore()));
+        beforeScores.put("댕김",   (int) Math.round(survey.getTsDryness()));
+        beforeScores.put("붉은기", (int) Math.round(survey.getTsRedness()));
+        beforeScores.put("여드름", (int) Math.round(survey.getTsAcne()));
+        beforeScores.put("흔적",   (int) Math.round(survey.getTsMark()));
         request.put("before_scores", beforeScores);
 
         if (afterScoreKey != null && afterScoreValue != null) {
@@ -208,12 +201,10 @@ public class AiCallService {
         return request;
     }
 
-    // =============================================
-    // history_cards 빌더
-    // =============================================
-
     private List<Map<String, Object>> buildHistoryCards(List<SolutionCard> cards) {
-        if (cards == null || cards.isEmpty()) return List.of();
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
         List<Map<String, Object>> result = new ArrayList<>();
 
         cards.stream()
@@ -241,17 +232,15 @@ public class AiCallService {
     }
 
     private List<String> parseJsonArray(String json) {
-        if (json == null || json.isBlank()) return List.of();
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
         try {
             return objectMapper.readValue(json, List.class);
         } catch (Exception e) {
             return List.of();
         }
     }
-
-    // =============================================
-    // Mock 데이터 (AI 서버 연결 전 테스트용)
-    // =============================================
 
     public Map<String, Object> getMockResponse() {
         try {
