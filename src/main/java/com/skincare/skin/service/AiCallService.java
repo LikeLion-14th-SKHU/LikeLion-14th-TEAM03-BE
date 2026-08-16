@@ -54,17 +54,17 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/journey", request);
     }
 
+    // ✅ baseUrl 제거하고 uri 직접 사용
     private Map<String, Object> callAi(String url, Map<String, Object> request) {
         try {
             log.info("AI 호출 시작: {}", url);
             String requestBody = objectMapper.writeValueAsString(request);
             log.info("AI 요청 Body: {}", requestBody);
 
-            RestClient restClient = RestClient.builder()
-                    .baseUrl(url)
-                    .build();
+            RestClient restClient = RestClient.create();
 
             String responseStr = restClient.post()
+                    .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(requestBody)
                     .retrieve()
@@ -106,7 +106,6 @@ public class AiCallService {
         axisScores.put("hydra", Math.round(hydraN * 100.0) / 100.0);
         skin.put("axis_scores", axisScores);
 
-        // ✅ double → int 변환
         Map<String, Object> troubleScores = new HashMap<>();
         troubleScores.put("피지량", (int) Math.round(survey.getTsSebum()));
         troubleScores.put("모공",   (int) Math.round(survey.getTsPore()));
@@ -181,7 +180,6 @@ public class AiCallService {
                 : 0.0);
         request.put("todo_stats", todoStats);
 
-        // ✅ double → int 변환
         Map<String, Object> beforeScores = new HashMap<>();
         beforeScores.put("피지량", (int) Math.round(survey.getTsSebum()));
         beforeScores.put("모공",   (int) Math.round(survey.getTsPore()));
