@@ -58,19 +58,27 @@ public class AiCallService {
         return callAi(aiServerUrl + "/ai/journey", request);
     }
 
+    // ✅ ObjectMapper로 명시적 직렬화
     private Map<String, Object> callAi(String url, Map<String, Object> request) {
         try {
             log.info("AI 호출 시작: {}", url);
+
+            String requestBody = objectMapper.writeValueAsString(request);
+            log.info("AI 요청 Body: {}", requestBody);
+
             RestClient restClient = RestClient.builder()
                     .baseUrl(url)
                     .build();
+
             String responseStr = restClient.post()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
+                    .body(requestBody)
                     .retrieve()
                     .body(String.class);
+
             log.info("AI 호출 성공: {}", url);
             return objectMapper.readValue(responseStr, Map.class);
+
         } catch (Exception e) {
             log.error("AI 호출 실패: {}, error: {}", url, e.getMessage());
             throw new CustomException(ErrorCode.AI_CALL_FAILED, e);
@@ -294,7 +302,6 @@ public class AiCallService {
         }
     }
 
-    // ✅ Mock 2차 - 추가 필드 반영
     public Map<String, Object> getMockAi2Response() {
         Map<String, Object> card = new HashMap<>();
         card.put("type", "UPDATE");
@@ -305,16 +312,15 @@ public class AiCallService {
         card.put("cautions", List.of("줄여도 붉은기가 3일 이상 지속되면 중단해 주세요"));
         card.put("prescribed_ingredients", List.of("히알루론산", "세라마이드"));
         card.put("excluded_ingredients", List.of("살리실산"));
-        card.put("products", List.of());                // ✅ 추가
-        card.put("products_detail", List.of());         // ✅ 추가
-        card.put("adjusted_ingredients", List.of());    // ✅ 추가
+        card.put("products", List.of());
+        card.put("products_detail", List.of());
+        card.put("adjusted_ingredients", List.of());
 
         Map<String, Object> response = new HashMap<>();
         response.put("card", card);
         return response;
     }
 
-    // ✅ Mock 3차 - 추가 필드 반영
     public Map<String, Object> getMockAi3Response() {
         Map<String, Object> journey = new HashMap<>();
         journey.put("summary", "결혼식까지 30일 동안 여드름과 피지 관리에 집중하셨어요.");
@@ -324,13 +330,13 @@ public class AiCallService {
         ));
         journey.put("next_step", "이번에 미뤄둔 레티놀은 지금부터 시작하시면 좋아요.");
         journey.put("closing", "자외선 차단은 계속 지켜주세요.");
-        journey.put("score_change", Map.of(    // ✅ 추가
+        journey.put("score_change", Map.of(
                 "item", "피지량",
                 "before", 8,
                 "after", 4,
                 "delta", 4
         ));
-        journey.put("completion_rate", 0.73);  // ✅ 추가
+        journey.put("completion_rate", 0.73);
 
         Map<String, Object> response = new HashMap<>();
         response.put("journey", journey);
