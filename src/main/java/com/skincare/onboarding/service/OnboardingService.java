@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +37,10 @@ public class OnboardingService {
             throw new CustomException(ErrorCode.INVALID_GOAL_DATE);
         }
 
-        Optional<Onboarding> existing =
-                onboardingRepository.findBySessionAndIsActiveTrue(session);
-        existing.ifPresent(Onboarding::deactivate);
+        // ✅ 중복 활성 온보딩 전부 비활성화
+        List<Onboarding> existingList =
+                onboardingRepository.findAllBySessionAndIsActiveTrue(session);
+        existingList.forEach(Onboarding::deactivate);
 
         Onboarding onboarding = Onboarding.builder()
                 .session(session)
