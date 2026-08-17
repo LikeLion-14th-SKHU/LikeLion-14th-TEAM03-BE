@@ -39,12 +39,14 @@ public class SessionService {
         Session session = new Session(newUuid);
         sessionRepository.save(session);
 
-        // 쿠키 설정
-        Cookie cookie = new Cookie(COOKIE_NAME, newUuid);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(60 * 60 * 24 * 30); // 30일
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        // ✅ SameSite=None; Secure 설정 추가 (크로스 도메인 쿠키 전송)
+        response.setHeader("Set-Cookie",
+                COOKIE_NAME + "=" + newUuid +
+                        "; Path=/" +
+                        "; Max-Age=" + (60 * 60 * 24 * 30) +
+                        "; HttpOnly" +
+                        "; Secure" +
+                        "; SameSite=None");
 
         return session;
     }
