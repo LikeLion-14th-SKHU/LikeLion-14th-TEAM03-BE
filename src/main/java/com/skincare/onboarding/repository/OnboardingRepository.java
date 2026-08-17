@@ -17,4 +17,7 @@ public interface OnboardingRepository extends JpaRepository<Onboarding, Long> {
 
     // ✅ 가장 최근 온보딩 조회 (비활성 포함)
     Optional<Onboarding> findTopBySessionOrderByCreatedAtDesc(Session session);
+
+    // ✅ 세션별 전체 활성 온보딩 조회 (중복 대비)
+    List<Onboarding> findAllBySessionAndIsActiveTrue(Session session);
 }
