@@ -14,4 +14,7 @@ public interface OnboardingRepository extends JpaRepository<Onboarding, Long> {
 
     // 전체 활성 플랜 조회 (스케줄러용)
     List<Onboarding> findAllByIsActiveTrue();
+
+    // ✅ 가장 최근 온보딩 조회 (비활성 포함)
+    Optional<Onboarding> findTopBySessionOrderByCreatedAtDesc(Session session);
 }
