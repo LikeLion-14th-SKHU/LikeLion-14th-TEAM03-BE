@@ -33,17 +33,14 @@ public class OnboardingService {
     @Transactional
     public OnboardingResponseDto saveOnboarding(Session session,
                                                 OnboardingRequestDto request) {
-        // 목표 날짜 검증
         if (request.getGoalDate().isBefore(LocalDate.now())) {
             throw new CustomException(ErrorCode.INVALID_GOAL_DATE);
         }
 
-        // 기존 활성 플랜 비활성화
         Optional<Onboarding> existing =
                 onboardingRepository.findBySessionAndIsActiveTrue(session);
         existing.ifPresent(Onboarding::deactivate);
 
-        // 온보딩 저장
         Onboarding onboarding = Onboarding.builder()
                 .session(session)
                 .name(request.getName())
@@ -54,16 +51,12 @@ public class OnboardingService {
                 .build();
         onboardingRepository.save(onboarding);
 
-        // 설문 점수 계산 + 저장
         SurveyResult surveyResult = surveyCalculationService
                 .calculate(onboarding, request.getSurveyAnswers(),
                         request.getConcernRaw());
         surveyResultRepository.save(surveyResult);
 
-        // AI 1차 호출 + skin_results 저장 → card 데이터 반환
         Map<String, Object> cardData = skinService.generateSkinResult(onboarding);
-
-        // 초기 카드 생성
         cardService.createInitialCard(onboarding, cardData);
 
         return new OnboardingResponseDto(onboarding, surveyResult);
@@ -96,20 +89,15 @@ public class OnboardingService {
 
         onboarding.updateGoalDate(newGoalDate);
 
-        // D-Day 변경 시 AI 재호출
         Map<String, Object> cardData = skinService.generateSkinResult(onboarding);
-
-        // DDAY_CHANGE 카드 생성
         cardService.createDdayChangeCard(onboarding, cardData);
     }
 
-    // 새로 검사 (플랜 종료)
+    // ✅ 새로 검사 - 이미 비활성화된 경우 그냥 성공 반환
     @Transactional
     public void restartOnboarding(Session session) {
-        Onboarding onboarding = onboardingRepository
+        onboardingRepository
                 .findBySessionAndIsActiveTrue(session)
-                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
-
-        onboarding.deactivate();
+                .ifPresent(Onboarding::deactivate);
     }
 }

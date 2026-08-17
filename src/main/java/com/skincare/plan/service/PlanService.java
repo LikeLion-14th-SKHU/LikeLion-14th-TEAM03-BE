@@ -61,26 +61,20 @@ public class PlanService {
         List<SolutionCard> cards = solutionCardRepository
                 .findByOnboardingOrderByCreatedAtAsc(onboarding);
 
-        // ✅ 실제 AI 3차 연동
         Map<String, Object> aiResponse = aiCallService.callAi3(
                 onboarding, survey, cards,
                 cleansingDone, (int) totalDays,
                 request.getAfterScoreKey(),
                 request.getAfterScoreValue());
-        // Mock 사용 시:
-        // Map<String, Object> aiResponse = aiCallService.getMockAi3Response();
 
-        // journey 파싱
         Map<String, Object> journey = (Map<String, Object>) aiResponse.get("journey");
 
-        // ✅ score_change, completion_rate는 최상단(root)에서 파싱
         Map<String, Object> scoreChange = aiResponse.containsKey("score_change")
                 ? (Map<String, Object>) aiResponse.get("score_change")
                 : null;
 
         Object completionRate = aiResponse.getOrDefault("completion_rate", null);
 
-        // highlights JSON 저장
         String improvementPoints = "";
         Object highlights = journey.get("highlights");
         if (highlights != null) {
@@ -107,10 +101,11 @@ public class PlanService {
         return new PlanResultResponseDto(planResult);
     }
 
+    // ✅ 비활성 온보딩도 조회
     @Transactional(readOnly = true)
     public PlanResultResponseDto getPlanResult(Session session) {
         Onboarding onboarding = onboardingRepository
-                .findBySessionAndIsActiveTrue(session)
+                .findTopBySessionOrderByCreatedAtDesc(session)
                 .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
 
         PlanResult planResult = planResultRepository
