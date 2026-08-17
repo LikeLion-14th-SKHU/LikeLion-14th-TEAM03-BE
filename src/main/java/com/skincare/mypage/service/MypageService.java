@@ -3,6 +3,7 @@ package com.skincare.mypage.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skincare.common.exception.CustomException;
 import com.skincare.common.exception.ErrorCode;
+import com.skincare.mypage.dto.PlanHistoryResponseDto;
 import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.repository.OnboardingRepository;
@@ -21,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,7 @@ public class MypageService {
     private final SkinResultRepository skinResultRepository;
     private final PlanResultRepository planResultRepository;
     private final TodoCheckRepository todoCheckRepository;
-    private final ObjectMapper objectMapper; // ✅ 추가
+    private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public Map<String, Object> getMypage(Session session) {
@@ -66,7 +69,7 @@ public class MypageService {
         Optional<SkinResult> skinResult = skinResultRepository
                 .findByOnboarding(onboarding);
         skinResult.ifPresent(sr ->
-                result.put("skinResult", new SkinResultResponseDto(sr, objectMapper))); // ✅ objectMapper 전달
+                result.put("skinResult", new SkinResultResponseDto(sr, objectMapper)));
 
         // TodoList 진행률
         long totalDays = Math.max(ChronoUnit.DAYS.between(
@@ -81,8 +84,8 @@ public class MypageService {
                 "totalDays", totalDays,
                 "cleansingDone", cleansingDone,
                 "skincareDone", skincareDone,
-                "cleansingRate", Math.min((int) ((cleansingDone / (double) totalDays) * 100), 100), // ✅ Math.min
-                "skincareRate", Math.min((int) ((skincareDone / (double) totalDays) * 100), 100)    // ✅ Math.min
+                "cleansingRate", Math.min((int) ((cleansingDone / (double) totalDays) * 100), 100),
+                "skincareRate", Math.min((int) ((skincareDone / (double) totalDays) * 100), 100)
         ));
 
         // D-Day 종료 결과 (있으면)
@@ -94,11 +97,33 @@ public class MypageService {
             planResultMap.put("improvementPoints", pr.getImprovementPoints());
             planResultMap.put("recommendationNext", pr.getRecommendationNext());
             planResultMap.put("todoCompletionRate", pr.getTodoCompletionRate());
-            planResultMap.put("afterScoreKey", pr.getAfterScoreKey() != null ? pr.getAfterScoreKey() : "");       // ✅ 추가
-            planResultMap.put("afterScoreValue", pr.getAfterScoreValue() != null ? pr.getAfterScoreValue() : 0.0); // ✅ 추가
+            planResultMap.put("afterScoreKey", pr.getAfterScoreKey() != null ? pr.getAfterScoreKey() : "");
+            planResultMap.put("afterScoreValue", pr.getAfterScoreValue() != null ? pr.getAfterScoreValue() : 0.0);
             result.put("planResult", planResultMap);
         });
 
         return result;
+    }
+
+    // ✅ 과거 플랜 히스토리 조회
+    @Transactional(readOnly = true)
+    public List<PlanHistoryResponseDto> getPlanHistory(Session session) {
+        List<Onboarding> onboardings = onboardingRepository
+                .findAllBySessionOrderByCreatedAtDesc(session);
+
+        return onboardings.stream()
+                .map(onboarding -> {
+                    String baseType = surveyResultRepository
+                            .findByOnboarding(onboarding)
+                            .map(SurveyResult::getBaseType)
+                            .orElse(null);
+
+                    PlanResult planResult = planResultRepository
+                            .findByOnboarding(onboarding)
+                            .orElse(null);
+
+                    return new PlanHistoryResponseDto(onboarding, baseType, planResult);
+                })
+                .collect(Collectors.toList());
     }
 }

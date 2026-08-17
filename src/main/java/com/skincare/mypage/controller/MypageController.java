@@ -1,6 +1,7 @@
 package com.skincare.mypage.controller;
 
 import com.skincare.common.response.ApiResponse;
+import com.skincare.mypage.dto.PlanHistoryResponseDto;
 import com.skincare.mypage.service.MypageService;
 import com.skincare.session.entity.Session;
 import com.skincare.session.service.SessionService;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Mypage", description = "마이페이지 API - 내 정보 및 피부 결과 종합 조회")
@@ -33,6 +35,21 @@ public class MypageController {
                 .getOrCreateSession(httpRequest, httpResponse);
 
         Map<String, Object> response = mypageService.getMypage(session);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // ✅ 과거 플랜 히스토리 조회
+    @Operation(summary = "플랜 히스토리 조회", description = "현재 세션의 모든 플랜 히스토리를 최신순으로 조회합니다. 진행중인 플랜과 종료된 플랜 모두 포함됩니다.")
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<PlanHistoryResponseDto>>> getPlanHistory(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+
+        Session session = sessionService
+                .getOrCreateSession(httpRequest, httpResponse);
+
+        List<PlanHistoryResponseDto> response = mypageService.getPlanHistory(session);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
