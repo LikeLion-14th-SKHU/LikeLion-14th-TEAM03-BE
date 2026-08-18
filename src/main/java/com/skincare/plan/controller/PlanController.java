@@ -1,6 +1,7 @@
 package com.skincare.plan.controller;
 
 import com.skincare.common.response.ApiResponse;
+import com.skincare.plan.dto.BeforeScoreResponseDto;
 import com.skincare.plan.dto.PlanFinishRequestDto;
 import com.skincare.plan.dto.PlanResultResponseDto;
 import com.skincare.plan.service.PlanService;
@@ -49,6 +50,21 @@ public class PlanController {
                 .getOrCreateSession(httpRequest, httpResponse);
 
         PlanResultResponseDto response = planService.getPlanResult(session);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // ✅ before score 조회
+    @Operation(summary = "Before Score 조회", description = "D-Day 종료 화면 진입 시 호출합니다. 온보딩 시 측정된 trouble_scores 중 가장 높은 항목(afterScoreKey)과 점수(beforeScoreValue)를 반환합니다. 슬라이더 초기값으로 사용하세요.")
+    @GetMapping("/before-score")
+    public ResponseEntity<ApiResponse<BeforeScoreResponseDto>> getBeforeScore(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+
+        Session session = sessionService
+                .getOrCreateSession(httpRequest, httpResponse);
+
+        BeforeScoreResponseDto response = planService.getBeforeScore(session);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

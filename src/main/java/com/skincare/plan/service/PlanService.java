@@ -9,6 +9,7 @@ import com.skincare.onboarding.entity.Onboarding;
 import com.skincare.onboarding.entity.SurveyResult;
 import com.skincare.onboarding.repository.OnboardingRepository;
 import com.skincare.onboarding.repository.SurveyResultRepository;
+import com.skincare.plan.dto.BeforeScoreResponseDto;
 import com.skincare.plan.dto.PlanFinishRequestDto;
 import com.skincare.plan.dto.PlanResultResponseDto;
 import com.skincare.plan.entity.PlanResult;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -113,5 +115,33 @@ public class PlanService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_RESULT_NOT_FOUND));
 
         return new PlanResultResponseDto(planResult);
+    }
+
+    // ✅ before score 조회 (trouble_scores MAX값 항목)
+    @Transactional(readOnly = true)
+    public BeforeScoreResponseDto getBeforeScore(Session session) {
+        Onboarding onboarding = onboardingRepository
+                .findBySessionAndIsActiveTrue(session)
+                .orElseThrow(() -> new CustomException(ErrorCode.ONBOARDING_NOT_FOUND));
+
+        SurveyResult survey = surveyResultRepository
+                .findByOnboarding(onboarding)
+                .orElseThrow(() -> new CustomException(ErrorCode.SURVEY_RESULT_NOT_FOUND));
+
+        // ✅ 피지량/댕김/여드름/붉은기 중 MAX값 항목 찾기
+        Map<String, Double> troubleScores = new HashMap<>();
+        troubleScores.put("피지량", survey.getTsSebum());
+        troubleScores.put("댕김",   survey.getTsDryness());
+        troubleScores.put("여드름", survey.getTsAcne());
+        troubleScores.put("붉은기", survey.getTsRedness());
+
+        String maxKey = troubleScores.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("피지량");
+
+        Double maxValue = troubleScores.get(maxKey);
+
+        return new BeforeScoreResponseDto(maxKey, maxValue);
     }
 }
