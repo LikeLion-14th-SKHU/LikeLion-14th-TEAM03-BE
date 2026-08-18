@@ -44,8 +44,6 @@ public class SkinService {
 
         // ✅ 실제 AI 연동
         Map<String, Object> aiResponse = aiCallService.callAi1(onboarding, survey, cards);
-        // Mock 사용 시:
-        // Map<String, Object> aiResponse = aiCallService.getMockResponse();
 
         try {
             String cosmeticJson = objectMapper
@@ -57,6 +55,7 @@ public class SkinService {
             routinesMap.put("type_description", aiResponse.getOrDefault("type_description", ""));
             String routinesJson = objectMapper.writeValueAsString(routinesMap);
 
+            // ✅ AI 서버에서 모든 추천 성분 제품 포함해서 내려줌 → 그대로 저장
             String productsDetailJson = aiResponse.get("products_detail") != null
                     ? objectMapper.writeValueAsString(aiResponse.get("products_detail"))
                     : null;
